@@ -67,4 +67,31 @@ class LoginViewModel extends ChangeNotifier {
       return false; // Error
     }
   }
+
+  /// Inicio de sesión con Google.
+  /// TODO: La implementación real se realiza en la rama de Google Sign-In.
+  /// Requiere: firebase_auth GoogleAuthProvider + google_sign_in package.
+  Future<bool> loginWithGoogle() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // TODO: Implementar integración con Google Sign-In
+      // Ejemplo:
+      //   final googleUser = await GoogleSignIn().signIn();
+      //   final googleAuth = await googleUser!.authentication;
+      //   final credential = GoogleAuthProvider.credential(
+      //     accessToken: googleAuth.accessToken,
+      //     idToken: googleAuth.idToken,
+      //   );
+      //   _currentUser = await authRepository.loginWithGoogle(credential);
+      throw UnimplementedError('Google Sign-In aún no implementado.');
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }
