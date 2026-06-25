@@ -49,10 +49,30 @@ class MainApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2563EB),
+            seedColor: const Color(0xFF0D1B3E),
             brightness: Brightness.light,
           ),
+          scaffoldBackgroundColor: Colors.transparent, // ← fondo gradient visible en todas las pantallas
           useMaterial3: true,
+        ),
+        // ── Gradiente diagonal aplicado globalmente ────────────────────────
+        builder: (context, child) => Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [
+                Color(0xFFF2C4AA), // melocotón — esquina superior-derecha
+                Color(0xFFF8F0EB), // blanco cálido
+                Color(0xFFEEF5F9), // blanco frío
+                Color(0xFFB8D8E8), // azul cielo — esquina inferior-izquierda
+              ],
+              stops: [0.0, 0.38, 0.62, 1.0],
+            ),
+          ),
+          child: child!,
         ),
         home: const LoginScreen(),
       ),
