@@ -101,16 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _loginGoogle() async {
-    final vm = context.read<LoginViewModel>();
-    await vm.loginWithGoogle();
-    if (!mounted) return;
-    if (vm.currentUser != null) {
-      _goByRole(vm.currentUser!.rol);
-    } else if (vm.errorMessage != null) {
-      _showError(vm.errorMessage!);
-    }
-  }
+  // Google Sign-In: ver _loginWithGoogle() más abajo (implementación completa)
 
   InputDecoration _deco({
     required String hint,
@@ -492,7 +483,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 52,
                       child: OutlinedButton(
-                        onPressed: vm.isLoading ? null : _loginGoogle,
+                        onPressed: vm.isLoading ? null : _loginWithGoogle,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: _kNavy,
                           backgroundColor: Colors.white,
@@ -568,56 +559,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _isLogin = !_isLogin;
-                  });
-                },
-                child: Text(_isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión', style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
-              if (_isLogin) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('O', style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
-                    ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    onPressed: viewModel.isLoading ? null : _loginWithGoogle,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFDADADA)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      backgroundColor: Colors.white,
-                    ),
-                    icon: Image.network(
-                      'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                      height: 22,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.login, size: 22),
-                    ),
-                    label: const Text(
-                      'Continuar con Google',
-                      style: TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              const Text('Admin: admin@test.com / 123456\nParticipante: user@test.com / 123456', 
-                textAlign: TextAlign.center, 
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
           ),
         ),
     );

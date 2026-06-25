@@ -69,37 +69,22 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   /// Inicio de sesión con Google.
-  /// TODO: La implementación real se realiza en la rama de Google Sign-In.
-  /// Requiere: firebase_auth GoogleAuthProvider + google_sign_in package.
-  Future<bool> loginWithGoogle() async {
+  /// Si el usuario es nuevo, el repositorio lanza NeedsRoleSelectionException
+  /// y la UI debe capturarla para pedir la selección de rol.
   Future<bool> loginWithGoogle({String? rol}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      // TODO: Implementar integración con Google Sign-In
-      // Ejemplo:
-      //   final googleUser = await GoogleSignIn().signIn();
-      //   final googleAuth = await googleUser!.authentication;
-      //   final credential = GoogleAuthProvider.credential(
-      //     accessToken: googleAuth.accessToken,
-      //     idToken: googleAuth.idToken,
-      //   );
-      //   _currentUser = await authRepository.loginWithGoogle(credential);
-      throw UnimplementedError('Google Sign-In aún no implementado.');
-    } catch (e) {
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
-      _isLoading = false;
-      notifyListeners();
       _currentUser = await authRepository.loginWithGoogle(rol: rol);
       _isLoading = false;
       notifyListeners();
       return _currentUser != null;
-    } catch (e) {
+    } on Exception catch (e) {
       _isLoading = false;
       notifyListeners();
-      // Re-lanzar excepciones especiales para que la UI las maneje
+      // Re-lanzar para que la UI muestre el diálogo de selección de rol
       if (e.toString().contains('NeedsRoleSelectionException')) rethrow;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
