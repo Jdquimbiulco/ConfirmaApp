@@ -72,6 +72,7 @@ class LoginViewModel extends ChangeNotifier {
   /// TODO: La implementación real se realiza en la rama de Google Sign-In.
   /// Requiere: firebase_auth GoogleAuthProvider + google_sign_in package.
   Future<bool> loginWithGoogle() async {
+  Future<bool> loginWithGoogle({String? rol}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -90,6 +91,17 @@ class LoginViewModel extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
+      notifyListeners();
+      _currentUser = await authRepository.loginWithGoogle(rol: rol);
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      // Re-lanzar excepciones especiales para que la UI las maneje
+      if (e.toString().contains('NeedsRoleSelectionException')) rethrow;
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       return false;
     }
