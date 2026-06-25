@@ -67,4 +67,25 @@ class LoginViewModel extends ChangeNotifier {
       return false; // Error
     }
   }
+
+  Future<bool> loginWithGoogle({String? rol}) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await authRepository.loginWithGoogle(rol: rol);
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      // Re-lanzar excepciones especiales para que la UI las maneje
+      if (e.toString().contains('NeedsRoleSelectionException')) rethrow;
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
 }

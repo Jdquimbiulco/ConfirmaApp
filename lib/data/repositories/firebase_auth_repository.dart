@@ -2,8 +2,17 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/usuario.dart';
+
+/// Excepción especial: el usuario es nuevo en Google Sign-In y necesita elegir un rol.
+class NeedsRoleSelectionException implements Exception {
+  final String uid;
+  final String nombre;
+  final String email;
+  const NeedsRoleSelectionException({required this.uid, required this.nombre, required this.email});
+}
 
 class FirebaseAuthRepository implements AuthRepository {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
@@ -33,7 +42,55 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<Usuario?> loginWithGoogle({String? rol}) async {
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return null; // usuario canceló
+
+      final googleAuth = await googleUser.authentication;
+      final credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final user = userCredential.user!;
+
+      final docRef = _firestore.collection('usuarios').doc(user.uid);
+      final doc = await docRef.get();
+
+      if (!doc.exists) {
+        if (rol == null) {
+          // Usuario nuevo sin rol: pedir selección en la UI
+          throw NeedsRoleSelectionException(
+            uid: user.uid,
+            nombre: user.displayName ?? googleUser.email.split('@')[0],
+            email: user.email ?? '',
+          );
+        }
+        // Crear perfil con el rol elegido
+        await docRef.set({
+          'nombre': user.displayName ?? googleUser.email.split('@')[0],
+          'email': user.email ?? '',
+          'rol': rol,
+          'biometriaRegistrada': false,
+        });
+      }
+
+      final updatedDoc = await docRef.get();
+      return _userFromFirebase(user, updatedDoc.data());
+    } on NeedsRoleSelectionException {
+      rethrow; // dejar que la UI lo maneje
+    } on auth.FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Error al iniciar sesión con Google');
+    } catch (e) {
+      throw Exception('Error al iniciar sesión con Google: $e');
+    }
+  }
+
+  @override
   Future<void> logout() async {
+    await GoogleSignIn().signOut();
     await _firebaseAuth.signOut();
   }
 
